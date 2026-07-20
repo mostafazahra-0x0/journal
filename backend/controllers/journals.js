@@ -11,12 +11,15 @@ journalsRouter.get('/', async (request, response) => {
 journalsRouter.get('/:id', async (request, response) => {
   const { id } = request.params
   const journal = await Journal.findById(id)
-  if (journal.user.toString() !== request.user._id.toString()) {
-    return response.status(403).json({ error: '...' })
-  }
+
   if (!journal) {
     return response.status(404).json({ error: 'Journal not found' })
   }
+
+  if (journal.user.toString() !== request.user._id.toString()) {
+    return response.status(403).json({ error: 'You are not authorized to this journal' })
+  }
+
   response.json(journal)
 })
 //post

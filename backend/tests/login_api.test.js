@@ -25,7 +25,26 @@ describe('login tests', () => {
     assert.strictEqual(response.body.username, 'testuser')
    
   })
-  
+  test('fails with incorrect data', async () => {
+    const response = await api
+      .post('/api/login')
+      .send({ username: 'testuser', password: 'wrongpassword' })
+      .expect(401)
+    
+    assert.strictEqual(response.body.error, 'invalid username or password')
+  })
+  test('fails with missing password', async () => {
+    const response = await api
+      .post('/api/login')
+      .send({ username: 'testuser' })
+      .expect(400)
+  })
+  test('fails with missing username', async () => {
+    const response = await api
+      .post('/api/login')
+      .send({ password: 'testpassword' })
+      .expect(400)
+  })  
 })
 
 

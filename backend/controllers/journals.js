@@ -60,7 +60,7 @@ journalsRouter.put('/:id', async (request, response) => {
   if (journal.user.toString() !== request.user._id.toString()) {
     return response.status(403).json({ error: 'You are not authorized to update this journal' })
   }
-  if (!name || !content) {
+  if (!name && !content) {
     return response.status(400).json({ error: 'Name and content are required' })
   }
   const updatedJournal = await Journal.findByIdAndUpdate(

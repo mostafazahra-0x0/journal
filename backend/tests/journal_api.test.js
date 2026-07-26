@@ -86,12 +86,64 @@ describe('journal ownership checks', () => {
       .send({ name: 'hacked', content: 'hacked content' })
       .expect(403)
   })
+  test('fails with status 403 if user tries to delete another user\'s journal', async () => {
+    await api
+      .delete(`/api/journals/${journalId}`)
+      .set('Authorization', `Bearer ${otherUserToken}`)
+      .expect(403)
+  })
+  test('succeeds in returning the journal when owner requests it', async () => {
+    const response = await api
+      .get(`/api/journals/${journalId}`)
+      .set('Authorization', `Bearer ${token}`)
+      .expect(200)
+    
+    assert.strictEqual(response.body.name, 'testjournal')
+  })
+  test('succeeds in updating the journal when owner requests it', async () => { 
+    const updatedName = 'updated journal'
+    const response = await api
+      .put(`/api/journals/${journalId}`)
+      .set('Authorization', `Bearer ${token}`)
+      .send({ name: updatedName })
+      .expect(200)
+    
+    assert.strictEqual(response.body.name, updatedName)
+  })
+  test('succeeds in deleting the journal when owner requests it', async () => { 
+    const response = await api
+      .delete(`/api/journals/${journalId}`)
+      .set('Authorization', `Bearer ${token}`)
+      .expect(204)
+    const deletedJournal = await Journal.findById(journalId)
+    assert.strictEqual(deletedJournal, null)
+  })
+  test('fails with status 400 if name and content are missing', async () => {
+    await api
+      .put(`/api/journals/${journalId}`)
+      .set('Authorization', `Bearer ${token}`)
+      .send({})
+      .expect(400)
+  })
 })
-
-
-
-
-
+describe('GET /api/journals/:id - edge cases', () => {
+  test('fails with status 404 if journal does not exist', async () => {
+    const nonExistingId = new mongoose.Types.ObjectId()
+  
+    await api
+      .get(`/api/journals/${nonExistingId}`)
+      .set('Authorization', `Bearer ${token}`)
+      .expect(404)
+  })
+  test('fails with status 400 if id is malformed', async () => {
+    const malformedId = 'invalid-object-id'
+  
+    await api
+      .get(`/api/journals/${malformedId}`)
+      .set('Authorization', `Bearer ${token}`)
+      .expect(400)
+  })
+})
 after(async () => {
   await mongoose.connection.close()
 })

@@ -11,4 +11,12 @@ const getToken = () => {
   return token
 }
 
-export default { setToken, getToken }
+const getAll = () => {
+  const config = {
+    headers: { Authorization: getToken() }
+  }
+  const request = axios.get(baseUrl, config)
+  return request.then(response => response.data)
+}
+
+export default { setToken, getToken, getAll }

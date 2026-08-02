@@ -1,4 +1,5 @@
 const journalsRouter = require('express').Router()
+const { default: mongoose } = require('mongoose')
 const Journal = require('../models/Journal')
 const middleware = require('../utils/middleware')
 journalsRouter.use(middleware.tokenExtractor)
@@ -22,21 +23,26 @@ journalsRouter.get('/:id', async (request, response) => {
 
   response.json(journal)
 })
-//post
 journalsRouter.post('/', async (request, response) => {
-  const { name, content } = request.body
+  const { content } = request.body
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+
+  const existingJournal = await Journal.findOne({ user: request.user._id, date: today })
+  if (existingJournal) {
+    return response.status(400).json({ error: 'Journal already exists for today' })
+  }
+
   const journal = new Journal({
-    name,
     content,
     user: request.user._id,
   })
   const savedJournal = await journal.save()
-
   request.user.journals.push(savedJournal._id)
   await request.user.save()
-
   response.status(201).json(savedJournal)
 })
+
 journalsRouter.delete('/:id', async (request, response) => {
   const { id } = request.params
   const journal = await Journal.findById(id)

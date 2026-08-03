@@ -1,5 +1,4 @@
 const journalsRouter = require('express').Router()
-const { default: mongoose } = require('mongoose')
 const Journal = require('../models/Journal')
 const middleware = require('../utils/middleware')
 journalsRouter.use(middleware.tokenExtractor)
@@ -58,7 +57,7 @@ journalsRouter.delete('/:id', async (request, response) => {
 
 journalsRouter.put('/:id', async (request, response) => {
   const { id } = request.params
-  const { name, content } = request.body
+  const { content } = request.body
   const journal = await Journal.findById(id)
   if (!journal) {
     return response.status(404).json({ error: 'Journal not found' })
@@ -66,12 +65,12 @@ journalsRouter.put('/:id', async (request, response) => {
   if (journal.user.toString() !== request.user._id.toString()) {
     return response.status(403).json({ error: 'You are not authorized to update this journal' })
   }
-  if (!name && !content) {
-    return response.status(400).json({ error: 'Name and content are required' })
+  if (!content) {
+    return response.status(400).json({ error: 'Content is required' })
   }
   const updatedJournal = await Journal.findByIdAndUpdate(
     id,
-    { name, content },
+    { content },
     { new: true, runValidators: true }
   )
   response.json(updatedJournal)

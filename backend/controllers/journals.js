@@ -54,7 +54,6 @@ journalsRouter.delete('/:id', async (request, response) => {
   await Journal.findByIdAndDelete(id)
   response.status(204).end()
 })
-
 journalsRouter.put('/:id', async (request, response) => {
   const { id } = request.params
   const { content } = request.body
@@ -65,7 +64,7 @@ journalsRouter.put('/:id', async (request, response) => {
   if (journal.user.toString() !== request.user._id.toString()) {
     return response.status(403).json({ error: 'You are not authorized to update this journal' })
   }
-  if (!content) {
+  if (content === undefined || content === null) {
     return response.status(400).json({ error: 'Content is required' })
   }
   const updatedJournal = await Journal.findByIdAndUpdate(

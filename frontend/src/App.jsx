@@ -60,19 +60,6 @@ const App = () => {
       console.log('Error saving journal:', error)
     }
   }
-  const handleClearJournal = async () => {
-    if (!todayJournal) return
-    try {
-      const updated = await journalService.update(todayJournal.id, '')
-      setJournals(journals.map(journal =>
-        journal.id === todayJournal.id ? updated : journal
-      ))
-      setContent('')
-    } catch (error) {
-      console.log('Error clearing journal:', error)
-    }
-  }
-
   useEffect(() => {
     if (user === null) {
       setJournals([])
@@ -109,14 +96,10 @@ const App = () => {
             handleContentChange={({ target }) => setContent(target.value)}
             handleSubmit={handleSaveJournal}
           />
-          {todayJournal && (
-            <button type="button" onClick={handleClearJournal}>Clear</button>
-          )}
-
           <ul>
             {journals.map(journal => (
               <li key={journal.id || journal._id}>
-                <strong>{formatDate(journal.date)}</strong>: {journal.content}
+                <strong>{formatDate(journal.date)}</strong> {journal.content}
               </li>
             ))}
           </ul>

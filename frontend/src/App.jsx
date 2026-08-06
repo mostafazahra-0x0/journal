@@ -12,7 +12,6 @@ const formatDate = (dateString) => {
   const day = dateObj.getDate().toString().padStart(2, '0')
   return `${year}/${month}/${day}`
 }
-
 const App = () => {
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
@@ -27,6 +26,9 @@ const App = () => {
     }
     return null
   })
+  const todayJournal = journals.find(
+    journal => formatDate(journal.date) === formatDate(new Date())
+  )
 
   const handleLogin = async (event) => {
     event.preventDefault()
@@ -41,16 +43,10 @@ const App = () => {
       console.log('wrong credentials')
     }
   }
-
   const handleSaveJournal = async (event) => {
     event.preventDefault()
     if (!content.trim()) return
-
     try {
-      const todayJournal = journals.find(
-        journal => formatDate(journal.date) === formatDate(new Date())
-      )
-
       if (todayJournal) {
         const updated = await journalService.update(todayJournal.id, content)
         setJournals(journals.map(journal =>
@@ -62,6 +58,18 @@ const App = () => {
       }
     } catch (error) {
       console.log('Error saving journal:', error)
+    }
+  }
+  const handleClearJournal = async () => {
+    if (!todayJournal) return
+    try {
+      const updated = await journalService.update(todayJournal.id, '')
+      setJournals(journals.map(journal =>
+        journal.id === todayJournal.id ? updated : journal
+      ))
+      setContent('')
+    } catch (error) {
+      console.log('Error clearing journal:', error)
     }
   }
 
@@ -96,13 +104,14 @@ const App = () => {
         <>
           <h1>hi {user.name} how are you ?</h1>
           
-          <form onSubmit={handleSaveJournal}>
-            <JournalForm 
-              content={content} 
-              handleContentChange={({ target }) => setContent(target.value)} 
-            />
-            <button type="submit">Save</button>
-          </form>
+          <JournalForm 
+            content={content} 
+            handleContentChange={({ target }) => setContent(target.value)}
+            handleSubmit={handleSaveJournal}
+          />
+          {todayJournal && (
+            <button type="button" onClick={handleClearJournal}>Clear</button>
+          )}
 
           <ul>
             {journals.map(journal => (

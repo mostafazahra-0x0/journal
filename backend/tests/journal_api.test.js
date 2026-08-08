@@ -38,17 +38,27 @@ describe('POST /api/journals', () => {
     const response = await api
       .post('/api/journals')
       .set('Authorization', `Bearer ${token}`)
-      .send({ name: 'Test Journal', content: 'Test content' })
+      .send({ content: 'Test content' })
       .expect(201)
-    assert.strictEqual(response.body.name, 'Test Journal')
     assert.strictEqual(response.body.content, 'Test content')
-    
   })
   test('fails with status 401 if token is not provided', async () => {
     await api
       .post('/api/journals')
-      .send({ name: 'Test Journal', content: 'Test content' })
+      .send({ content: 'Test content' })
       .expect(401)
+  })
+  test('fails with status 400 if a journal already exists for today', async () => {
+    await api
+      .post('/api/journals')
+      .set('Authorization', `Bearer ${token}`)
+      .send({ content: 'First entry' })
+      .expect(201)
+    await api
+      .post('/api/journals')
+      .set('Authorization', `Bearer ${token}`)
+      .send({ content: 'Second entry same day' })
+      .expect(400)
   })
 })
 describe('journal ownership checks', () => {
@@ -59,7 +69,7 @@ describe('journal ownership checks', () => {
     const journalResponse = await api
       .post('/api/journals')
       .set('Authorization', `Bearer ${token}`)
-      .send({ name: 'testjournal', content: 'testcontent' })
+      .send({ content: 'testcontent' })
       .expect(201)
     journalId = journalResponse.body.id
     await api
@@ -83,7 +93,7 @@ describe('journal ownership checks', () => {
     await api
       .put(`/api/journals/${journalId}`)
       .set('Authorization', `Bearer ${otherUserToken}`)
-      .send({ name: 'hacked', content: 'hacked content' })
+      .send({ content: 'hacked content' })
       .expect(403)
   })
   test('fails with status 403 if user tries to delete another user\'s journal', async () => {
@@ -98,17 +108,17 @@ describe('journal ownership checks', () => {
       .set('Authorization', `Bearer ${token}`)
       .expect(200)
     
-    assert.strictEqual(response.body.name, 'testjournal')
+    assert.strictEqual(response.body.content, 'testcontent')
   })
   test('succeeds in updating the journal when owner requests it', async () => { 
-    const updatedName = 'updated journal'
+    const updatedContent = 'updated journal content'
     const response = await api
       .put(`/api/journals/${journalId}`)
       .set('Authorization', `Bearer ${token}`)
-      .send({ name: updatedName })
+      .send({ content: updatedContent })
       .expect(200)
     
-    assert.strictEqual(response.body.name, updatedName)
+    assert.strictEqual(response.body.content, updatedContent)
   })
   test('succeeds in deleting the journal when owner requests it', async () => { 
     const response = await api
@@ -118,7 +128,7 @@ describe('journal ownership checks', () => {
     const deletedJournal = await Journal.findById(journalId)
     assert.strictEqual(deletedJournal, null)
   })
-  test('fails with status 400 if name and content are missing', async () => {
+  test('fails with status 400 if content is missing', async () => {
     await api
       .put(`/api/journals/${journalId}`)
       .set('Authorization', `Bearer ${token}`)

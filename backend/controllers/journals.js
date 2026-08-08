@@ -22,21 +22,26 @@ journalsRouter.get('/:id', async (request, response) => {
 
   response.json(journal)
 })
-//post
 journalsRouter.post('/', async (request, response) => {
-  const { name, content } = request.body
+  const { content } = request.body
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+
+  const existingJournal = await Journal.findOne({ user: request.user._id, date: today })
+  if (existingJournal) {
+    return response.status(400).json({ error: 'Journal already exists for today' })
+  }
+
   const journal = new Journal({
-    name,
     content,
     user: request.user._id,
   })
   const savedJournal = await journal.save()
-
   request.user.journals.push(savedJournal._id)
   await request.user.save()
-
   response.status(201).json(savedJournal)
 })
+
 journalsRouter.delete('/:id', async (request, response) => {
   const { id } = request.params
   const journal = await Journal.findById(id)
@@ -49,10 +54,9 @@ journalsRouter.delete('/:id', async (request, response) => {
   await Journal.findByIdAndDelete(id)
   response.status(204).end()
 })
-
 journalsRouter.put('/:id', async (request, response) => {
   const { id } = request.params
-  const { name, content } = request.body
+  const { content } = request.body
   const journal = await Journal.findById(id)
   if (!journal) {
     return response.status(404).json({ error: 'Journal not found' })
@@ -60,12 +64,12 @@ journalsRouter.put('/:id', async (request, response) => {
   if (journal.user.toString() !== request.user._id.toString()) {
     return response.status(403).json({ error: 'You are not authorized to update this journal' })
   }
-  if (!name && !content) {
-    return response.status(400).json({ error: 'Name and content are required' })
+  if (content === undefined || content === null) {
+    return response.status(400).json({ error: 'Content is required' })
   }
   const updatedJournal = await Journal.findByIdAndUpdate(
     id,
-    { name, content },
+    { content },
     { new: true, runValidators: true }
   )
   response.json(updatedJournal)

@@ -1,17 +1,16 @@
 const mongoose = require('mongoose')
 
 const journalSchema = new mongoose.Schema({
-  name: {
-    type: String
-  },
   content: {
-    type: String,
-    required: true,
-    minlength: 1
+    type: String
   },
   date: {
     type: Date,
-    default: Date.now
+    default: () => {
+      const today = new Date()
+      today.setHours(0, 0, 0, 0)
+      return today
+    }
   },
   important: {
     type: Boolean,

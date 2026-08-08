@@ -6,29 +6,31 @@ const LoginForm = ({
   password
 }) => {
   return (
-    <div>
-      <h2>Login</h2>
-      <form onSubmit={handleSubmit}>
-        <div>
-          <label>
-          username
+    <div className="login-shell">
+      <form className="login-card" onSubmit={handleSubmit}>
+        <p className="kicker">The Private Ledger</p>
+        <h2 className="login-title">Login</h2>
+        <div className="login-orbit" aria-hidden="true">✦ ✦ ✦</div>
+        <label className="field">
+          Username
           <input
             value={username}
             onChange={handleUsernameChange}
-            />
-          </label>
-        </div>
-        <div>
-          <label>
-            password
-            <input
+            autoComplete="username"
+          />
+        </label>
+        <label className="field">
+          Password
+          <input
             type="password"
             value={password}
-              onChange={handlePasswordChange}
-            />
-          </label>
-        </div>
-        <button type="submit">login</button>
+            onChange={handlePasswordChange}
+            autoComplete="current-password"
+          />
+        </label>
+        <button type="submit" className="btn btn-gold">
+          Enter the ledger <span className="btn-arrow" aria-hidden="true">&rarr;</span>
+        </button>
       </form>
     </div>
   )

@@ -1,8 +1,6 @@
-import { useState, useEffect } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
+import { useState } from 'react'
+import { useParams, useNavigate, Link } from 'react-router-dom'
 import JournalForm from './JournalForm'
-import journalService from '../services/journals'
-import '../index.css'
 
 const formatDate = (dateString) => {
   if (!dateString) return ''
@@ -17,16 +15,20 @@ const EditJournalPage = ({ journals, onSave }) => {
   const { id } = useParams()
   const navigate = useNavigate()
   const journal = journals.find(j => j.id === id)
-  const [content, setContent] = useState('')
+  const [lastJournal, setLastJournal] = useState(journal)
+  const [content, setContent] = useState(journal ? journal.content : '')
 
-  useEffect(() => {
-    if (journal) {
-      setContent(journal.content)
-    }
-  }, [journal])
+  if (journal !== lastJournal) {
+    setLastJournal(journal)
+    setContent(journal.content)
+  }
 
   if (!journal) {
-    return <p>journal not found</p>
+    return (
+      <p className="not-found">
+        Journal not found. <Link to="/">Return to the ledger</Link>
+      </p>
+    )
   }
 
   const handleSubmit = async (event) => {
@@ -37,14 +39,26 @@ const EditJournalPage = ({ journals, onSave }) => {
   }
 
   return (
-    <div>
-      <h2>تعديل جورنال تاريخ {formatDate(journal.date)}</h2>
-      <JournalForm
-        content={content}
-        handleContentChange={({ target }) => setContent(target.value)}
-        handleSubmit={handleSubmit}
-      />
-      <button onClick={() => navigate('/')}>cancel</button>
+    <div className="page">
+      <div className="edit-head">
+        <h2>
+          Retouch the page of <em>{formatDate(journal.date)}</em>
+        </h2>
+        <button className="btn btn-ghost" onClick={() => navigate('/')}>
+          <span aria-hidden="true">&larr;</span> Back
+        </button>
+      </div>
+      <section className="panel">
+        <div className="panel-head">
+          <span className="date-chip">{formatDate(journal.date)}</span>
+          <span className="stamp">Amending</span>
+        </div>
+        <JournalForm
+          content={content}
+          handleContentChange={({ target }) => setContent(target.value)}
+          handleSubmit={handleSubmit}
+        />
+      </section>
     </div>
   )
 }

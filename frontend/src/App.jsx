@@ -5,6 +5,7 @@ import loginService from './services/login'
 import journalService from './services/journals'
 import Home from './components/Home'
 import EditJournalPage from './components/EditJournalPage'
+import './App.css'
 
 const formatDate = (dateString) => {
   if (!dateString) return ''
@@ -43,7 +44,6 @@ const App = () => {
     }
   }
 
-  // دالة عامة لتحديث journal موجود بالـ array (يستخدمها Home و EditJournalPage)
   const updateJournalInList = (updatedJournal) => {
     setJournals(journals.map(journal =>
       journal.id === updatedJournal.id ? updatedJournal : journal
@@ -51,9 +51,7 @@ const App = () => {
   }
 
   useEffect(() => {
-    if (user === null) {
-      setJournals([])
-    } else {
+    if (user !== null) {
       journalService.getAll().then(fetchedJournals => {
         setJournals(fetchedJournals)
       })
@@ -73,8 +71,14 @@ const App = () => {
   }
 
   return (
-    <div>
-      <h1>hi {user.name} how are you ?</h1>
+    <main className="arena">
+      <header className="masthead">
+        <p className="kicker">
+          The daily ledger &middot; keeper: <strong>{user.name || user.username}</strong>
+        </p>
+        <p className="ornament" aria-hidden="true">✦ ✧ ✦</p>
+        <div className="masthead-rule" aria-hidden="true" />
+      </header>
       <Routes>
         <Route
           path="/"
@@ -92,12 +96,11 @@ const App = () => {
             <EditJournalPage
               journals={journals}
               onSave={updateJournalInList}
-              formatDate={formatDate}
             />
           }
         />
       </Routes>
-    </div>
+    </main>
   )
 }
 
